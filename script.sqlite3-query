@@ -1,0 +1,131 @@
+-- database: ./shop.db
+
+
+CREATE TABLE products (
+    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    price REAL NOT NULL
+);
+
+CREATE TABLE customers ( customer_id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT NOT NULL, last_name TEXT NOT NULL, email TEXT NOT NULL UNIQUE );
+
+CREATE TABLE orders ( 
+    order_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    customer_id INTEGER NOT NULL, 
+    product_id INTEGER NOT NULL, 
+    quantity INTEGER NOT NULL, 
+    order_date DATE NOT NULL, 
+    FOREIGN KEY (customer_id) 
+    REFERENCES customers(customer_id),
+     FOREIGN KEY (product_id) REFERENCES products(product_id) 
+);
+
+INSERT INTO products (name, category, price)
+VALUES ('Apple Iphone 18 Pro', 'смартфони', 60000),
+('Samsung Galaxy S25', 'смартфони', 55000);
+
+
+-- 1. Додавання 30 нових товарів (отримають ID з 4 по 33)
+INSERT INTO products (name, category, price) VALUES
+-- Електроніка
+('Смартфон X10', 'Електроніка', 12999.99),
+('Бездротові навушники Pods', 'Електроніка', 2499.50),
+('Електронна книга Reader', 'Електроніка', 4500.00),
+('Портативна колонка Boom', 'Електроніка', 1800.00),
+('Фітнес-браслет Fit', 'Електроніка', 1200.00),
+('Павербанк 20000mAh', 'Електроніка', 1150.00),
+('Бездротова миша', 'Електроніка', 650.00),
+('Механічна клавіатура', 'Електроніка', 2200.00),
+('Веб-камера HD', 'Електроніка', 1450.00),
+('Флеш-накопичувач 64GB', 'Електроніка', 350.00),
+
+-- Одяг
+('Куртка зимова', 'Одяг', 3400.00),
+('Джинси класичні', 'Одяг', 1200.00),
+('Худі оверсайз', 'Одяг', 950.00),
+('Футболка бавовняна', 'Одяг', 350.00),
+('Кросівки спортивні', 'Одяг', 2100.00),
+('Шкарпетки (упаковка 5 шт)', 'Одяг', 200.00),
+('Шапка в''язана', 'Одяг', 400.00),
+('Шкіряний ремінь', 'Одяг', 600.00),
+('Сорочка класична', 'Одяг', 850.00),
+('Спортивний костюм', 'Одяг', 1600.00),
+
+-- Дім та затишок
+('Кавоварка крапельна', 'Дім', 1900.00),
+('Блендер ручний', 'Дім', 850.00),
+('Набір кухонних ножів', 'Дім', 1250.00),
+('Плед флісовий', 'Дім', 550.00),
+('Настільна лампа LED', 'Дім', 780.00),
+('Органайзер для косметики', 'Дім', 400.00),
+('Постільна білизна двуспальна', 'Дім', 1400.00),
+('Термокухоль', 'Дім', 450.00),
+('Набір керамічних тарілок', 'Дім', 950.00),
+('Ароматичний дифузор', 'Дім', 320.00);
+
+
+-- 2. Додавання 10 клієнтів (отримають ID з 1 по 10, якщо таблиця була порожня)
+INSERT INTO customers (first_name, last_name, email) VALUES
+('Олександр', 'Петренко', 'o.petrenko@example.com'),
+('Марія', 'Коваленко', 'm.kovalenko@example.com'),
+('Іван', 'Шевченко', 'i.shevchenko@example.com'),
+('Анна', 'Мельник', 'a.melnyk@example.com'),
+('Дмитро', 'Бондаренко', 'd.bondarenko@example.com'),
+('Юлія', 'Бойко', 'y.boyko@example.com'),
+('Андрій', 'Кравченко', 'a.kravchenko@example.com'),
+('Ольга', 'Ковальчук', 'o.kovalchuk@example.com'),
+('Максим', 'Козак', 'm.kozak@example.com'),
+('Тетяна', 'Савченко', 't.savchenko@example.com');
+
+
+-- 3. Додавання 15 замовлень (враховуючи ваші 3 початкові товари та нові з ID 4–33)
+INSERT INTO orders (customer_id, product_id, quantity, order_date) VALUES
+(1, 1, 1, '2026-05-01'),  -- один із ваших перших 3 товарів
+(1, 13, 2, '2026-05-03'),
+(2, 18, 1, '2026-05-05'),
+(3, 4, 1, '2026-05-06'),
+(4, 24, 1, '2026-05-08'),
+(5, 15, 2, '2026-05-10'),
+(6, 2, 1, '2026-05-11'),  -- один із ваших перших 3 товарів
+(7, 27, 3, '2026-05-12'),
+(8, 14, 1, '2026-05-14'),
+(9, 6, 1, '2026-05-15'),
+(10, 21, 1, '2026-05-16'),
+(2, 31, 2, '2026-05-17'),
+(4, 3, 1, '2026-05-18'),  -- один із ваших перших 3 товарів
+(6, 33, 4, '2026-05-19'),
+(1, 17, 3, '2026-05-20');
+
+-- Загальна вартість всіх замовлень
+SELECT SUM(products.price * orders.quantity) FROM orders
+JOIN products ON orders.product_id = products.product_id;
+
+
+-- Середній чек замовлення:
+SELECT AVG(products.price * orders.quantity) AS avarage_sale
+FROM orders
+JOIN products ON orders.product_id = products.product_id;
+
+
+-- Найбільш популярна категорія товарів:
+SELECT products.category, SUM(orders.quantity) AS total_sales
+FROM orders
+JOIN products ON orders.product_id = products.product_id
+GROUP BY products.category
+ORDER BY total_sales DESC
+LIMIT 3;
+
+SELECT category, COUNT(product_id)
+FROM products
+GROUP BY category;
+
+--Оновіть ціни товарів в категорії "смартфони" на 10% збільшення.
+
+UPDATE products
+SET price = price*1.10
+WHERE category='Електроніка'
+
+
+
+
